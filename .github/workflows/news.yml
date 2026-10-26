@@ -1,0 +1,31 @@
+name: news-alerts
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: news-alerts
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Check and send what is due
+        env:
+          NEWS_MODE: group
+          NEWS_BOT_TOKEN: ${{ secrets.NEWS_BOT_TOKEN }}
+          NEWS_GROUP_CHAT_ID: ${{ secrets.NEWS_GROUP_CHAT_ID }}
+        run: python news_alerts.py --once
+      - name: Remember what was sent
+        run: |
+          git config user.name "news-alerts"
+          git config user.email "news-alerts@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "state" && git push)

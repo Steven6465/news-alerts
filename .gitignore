@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+send_test.ps1
+send_group_test.ps1
+find_chat_id.ps1
